@@ -30,7 +30,6 @@ export class AuthService {
         }
       });
     })
-
   }
 
   readJwtLocalStorage() {
@@ -50,4 +49,23 @@ export class AuthService {
     localStorage.removeItem("jwt");
     this.$jwt.next(null);
   }
+
+  signup(user: { email: string; password: string }): Observable<boolean> {
+
+    return new Observable<boolean> (resolve => {
+      this.http.post('http://localhost:3000/signup', user).subscribe({
+        next: (response: any) => {
+          localStorage.setItem('jwt', response.token);
+          this.readJwtLocalStorage();
+          resolve.next(true);
+          resolve.complete();
+        },
+        error: () => {
+          resolve.next(false);
+          resolve.complete();
+        }
+      });
+    })
+  }
+
 }
