@@ -31,8 +31,8 @@ db.connect((err) => {
 app.use(express.json());
 
 // Route pour récupérer tous les articles
-app.get("/liste-articles", (req, res) => {
-  db.query("SELECT * FROM article", (err, results) => {
+app.get("/products", (req, res) => {
+  db.query("SELECT * FROM products", (err, results) => {
     if (err) {
       console.error("Erreur lors de la récupération des articles :", err);
       res.status(500).send("Erreur serveur");
@@ -43,10 +43,10 @@ app.get("/liste-articles", (req, res) => {
 });
 
 // Route pour récupérer un article par son ID
-app.get("/article/:id", (req, res) => {
+app.get("/product/:id", (req, res) => {
   const articleId = req.params.id;
   db.query(
-    "SELECT * FROM article WHERE id = ?",
+    "SELECT * FROM product WHERE id = ?",
     [articleId],
     (err, results) => {
       if (err) {

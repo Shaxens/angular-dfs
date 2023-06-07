@@ -1,0 +1,60 @@
+<form (ngSubmit)="onAddArticle()" [formGroup]="formulaire">
+  <mat-form-field>
+    <mat-label>Nom du produit</mat-label>
+    <input matInput formControlName="title" />
+    <mat-error>Le nom du produit est obligatoire</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Quantité de lipides</mat-label>
+    <textarea matInput formControlName="body"></textarea>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
+      Le contenu est obligatoire
+    </mat-error>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
+      Le contenu doit avoir 5 caractères au minimum
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Quantité de glucides</mat-label>
+    <textarea matInput formControlName="body"></textarea>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
+      Le contenu est obligatoire
+    </mat-error>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
+      Le contenu doit avoir 5 caractères au minimum
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Quantité de calories</mat-label>
+    <textarea matInput formControlName="body"></textarea>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
+      Le contenu est obligatoire
+    </mat-error>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
+      Le contenu doit avoir 5 caractères au minimum
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Quantité de protéines</mat-label>
+    <textarea matInput formControlName="body"></textarea>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
+      Le contenu est obligatoire
+    </mat-error>
+    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
+      Le contenu doit avoir 5 caractères au minimum
+    </mat-error>
+  </mat-form-field>
+  <div>
+    <button mat-raised-button type="submit" color="primary">
+      {{ modifiedArticle ? "Modifier" : "Ajouter" }}
+    </button>
+
+    <a mat-raised-button class="ms-2" routerLink="/accueil" color="warn">
+      Annuler
+    </a>
+  </div>
+</form>

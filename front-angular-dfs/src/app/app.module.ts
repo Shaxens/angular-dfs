@@ -16,13 +16,17 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { HomeComponent } from './pages/home/home.component';
 import { SignupComponent } from './pages/signup/signup.component';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import { EditProductComponent } from './pages/edit-product/edit-product.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     HomeComponent,
-    SignupComponent
+    SignupComponent,
+    EditProductComponent
   ],
   imports: [
     BrowserModule,
@@ -35,7 +39,9 @@ import { SignupComponent } from './pages/signup/signup.component';
     MatFormFieldModule,
     FormsModule,
     ReactiveFormsModule,
-    MatIconModule
+    MatIconModule,
+    MatDividerModule,
+    MatProgressBarModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

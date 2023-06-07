@@ -13,6 +13,7 @@ export class SignupComponent {
   formulaire: FormGroup = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
+    admin: [false]
   });
 
   constructor(
@@ -25,7 +26,7 @@ export class SignupComponent {
     if (this.formulaire.valid) {
       this.auth.signup(this.formulaire.value).subscribe(success => {
         if (success) {
-          this.router.navigateByUrl('/login')
+          this.router.navigateByUrl('/home')
         } else {
           alert("Une erreur est survenue lors de la création de votre compte")
         }

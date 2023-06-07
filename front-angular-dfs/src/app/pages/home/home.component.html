@@ -1,4 +1,27 @@
 <div class="container">
-  <h1>home works!</h1>
-  <h4>Lorem ipsum dolor sit amet consectetur adipisicing elit. Obcaecati id, quas repellendus harum magnam quisquam saepe tenetur beatae, recusandae deleniti necessitatibus atque placeat exercitationem illum natus quia eaque aut quis!</h4>
+  <a *ngIf="jwt" mat-raised-button color="primary" routerLink="/add-product">Ajouter un produit</a>
+
+  <div class="row">
+    <div class="col-6" *ngFor="let products of listeArticle">
+
+      <mat-card class="example-card">
+        <mat-card-header>
+          <mat-card-subtitle>Dog Breed</mat-card-subtitle>
+          <mat-card-title>Shiba Inu</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>This card has divider and indeterminate progress as footer</p>
+          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias, ea? Aliquid est provident suscipit officiis pariatur, molestiae repellendus autem atque quidem rem dolorum et magni, voluptate impedit in quisquam debitis!</p>
+          <mat-divider></mat-divider>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button>LIKE</button>
+          <button mat-button>SHARE</button>
+        </mat-card-actions>
+        <mat-card-footer>
+          <mat-progress-bar mode="determinate" value="40" color="accent"></mat-progress-bar>
+        </mat-card-footer>
+      </mat-card>
+    </div>
+  </div>
 </div>
