@@ -8,6 +8,6 @@ export const authGuard = () => {
   const auth = inject(AuthService);
 
   return auth.$jwt.pipe(
-    tap((value) => (value == null ? router.navigate(['/connexion']) : true))
+    tap((value) => (value == null ? router.navigate(['/login']) : true))
   );
 };

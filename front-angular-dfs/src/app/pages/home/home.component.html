@@ -1,22 +1,23 @@
 <div class="container">
-  <a *ngIf="jwt" mat-raised-button color="primary" routerLink="/add-product">Ajouter un produit</a>
+  <a *ngIf="jwt" mat-raised-button color="primary" routerLink="/add-product" class="mt-4">Ajouter un produit</a>
 
   <div class="row">
-    <div class="col-6" *ngFor="let products of listeArticle">
+    <div class="col-4 mt-4" *ngFor="let product of productList">
 
-      <mat-card class="example-card">
-        <mat-card-header>
-          <mat-card-subtitle>Dog Breed</mat-card-subtitle>
-          <mat-card-title>Shiba Inu</mat-card-title>
+      <mat-card>
+        <mat-card-header class="mb-2">
+          <mat-card-title>{{product.name}}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p>This card has divider and indeterminate progress as footer</p>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias, ea? Aliquid est provident suscipit officiis pariatur, molestiae repellendus autem atque quidem rem dolorum et magni, voluptate impedit in quisquam debitis!</p>
+          <p>Lipides : {{ product.lipid }} g</p>
+          <p>Glucides : {{ product.carbohydrate }} g</p>
+          <p>Protéines : {{ product.protein }} g</p>
+          <p>Calories : {{ product.calories }} cal</p>
           <mat-divider></mat-divider>
         </mat-card-content>
         <mat-card-actions>
-          <button mat-button>LIKE</button>
-          <button mat-button>SHARE</button>
+          <button *ngIf="jwt?.admin" mat-button color="primary" [routerLink]="['/modify-product', product.id]">Modifier</button>
+          <button *ngIf="jwt?.admin" mat-button color="warn" (click)="onDeleteArticle(product.id)">Supprimer</button>
         </mat-card-actions>
         <mat-card-footer>
           <mat-progress-bar mode="determinate" value="40" color="accent"></mat-progress-bar>

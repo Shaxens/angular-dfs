@@ -19,6 +19,9 @@ import { SignupComponent } from './pages/signup/signup.component';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import { EditProductComponent } from './pages/edit-product/edit-product.component';
+import { DailyListComponent } from './pages/daily-list/daily-list.component';
+import { DailyListEditComponent } from './pages/daily-list-edit/daily-list-edit.component';
+import {MatSelectModule} from '@angular/material/select';
 
 @NgModule({
   declarations: [
@@ -26,7 +29,9 @@ import { EditProductComponent } from './pages/edit-product/edit-product.componen
     LoginComponent,
     HomeComponent,
     SignupComponent,
-    EditProductComponent
+    EditProductComponent,
+    DailyListComponent,
+    DailyListEditComponent
   ],
   imports: [
     BrowserModule,
@@ -41,7 +46,8 @@ import { EditProductComponent } from './pages/edit-product/edit-product.componen
     ReactiveFormsModule,
     MatIconModule,
     MatDividerModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatSelectModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

@@ -18,7 +18,7 @@ export class JwtInterceptor implements HttpInterceptor {
 
     if (jwt != null) {
       const cloneRequest = request.clone({
-        headers: request.headers.set('Authorization', "Bearer" + jwt)
+        headers: request.headers.set('Authorization', "Bearer " + jwt)
       })
       return next.handle(cloneRequest);
     }

@@ -30,11 +30,11 @@ db.connect((err) => {
 // Configuration du middleware pour le parsing du corps de la requête
 app.use(express.json());
 
-// Route pour récupérer tous les articles
+// Route pour récupérer tous les products
 app.get("/products", (req, res) => {
   db.query("SELECT * FROM products", (err, results) => {
     if (err) {
-      console.error("Erreur lors de la récupération des articles :", err);
+      console.error("Erreur lors de la récupération des products :", err);
       res.status(500).send("Erreur serveur");
       return;
     }
@@ -42,15 +42,15 @@ app.get("/products", (req, res) => {
   });
 });
 
-// Route pour récupérer un article par son ID
+// Route pour récupérer un product par son ID
 app.get("/product/:id", (req, res) => {
   const articleId = req.params.id;
   db.query(
-    "SELECT * FROM product WHERE id = ?",
+    "SELECT * FROM products WHERE id = ?",
     [articleId],
     (err, results) => {
       if (err) {
-        console.error("Erreur lors de la récupération de l'article :", err);
+        console.error("Erreur lors de la récupération de l'product :", err);
         res.status(500).send("Erreur serveur");
         return;
       }
@@ -68,9 +68,9 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    const article = JSON.parse(req.body.article);
+    const product = JSON.parse(req.body.product);
     const extension = file.originalname.split(".").pop();
-    const filename = "image_article_" + article.title + "." + extension;
+    const filename = "image_product_" + product.title + "." + extension;
     req.filename = filename;
     cb(null, filename);
   },
@@ -78,57 +78,54 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).array("file");
 
-// Route pour créer un nouvel article
-app.post("/article", upload, (req, res) => {
-  const article = JSON.parse(req.body.article);
+// Route pour créer un nouveau product
+app.post("/product", upload, (req, res) => {
+  const product = JSON.parse(req.body.product);
 
-  if (req.filename) {
-    article.filename = req.filename;
-  }
-
-  db.query("INSERT INTO article SET ?", article, (err, result) => {
+  db.query("INSERT INTO products SET ?", product, (err, result) => {
     if (err) {
-      console.error("Erreur lors de la création de l'article :", err);
+      console.error("Erreur lors de la création du produit :", err);
       res.status(500).send("Erreur serveur");
       return;
     }
-    article.id = result.insertId;
-    res.status(201).json(article);
+    product.id = result.insertId;
+    res.status(201).json(product);
   });
 });
 
 
 
-// Route pour mettre à jour un article
-app.put("/article/:id", upload, (req, res) => {
+// Route pour mettre à jour un product
+app.put("/product/:id", upload, (req, res) => {
   const articleId = req.params.id;
-  const article = JSON.parse(req.body.article);
+  const product = JSON.parse(req.body.product);
   db.query(
-    "UPDATE article SET ? WHERE id = ?",
-    [article, articleId],
+    "UPDATE products SET ? WHERE id = ?",
+    [product, articleId],
     (err) => {
       if (err) {
-        console.error("Erreur lors de la mise à jour de l'article :", err);
+        console.error("Erreur lors de la mise à jour du produit :", err);
         res.status(500).send("Erreur serveur");
         return;
       }
       //NOK -> res.sendStatus(200);
-      res.status(200).json(article);
+      res.status(200).json(product);
     }
   );
 });
 
-// Route pour supprimer un article
-app.delete("/article/:id", authenticateToken, (req, res) => {
+// Route pour supprimer un product
+app.delete("/product/:id", authenticateToken, (req, res) => {
   const articleId = req.params.id;
 
   if(req.user.admin != 1) {
     res.sendStatus(403);
   }
 
-  db.query("DELETE FROM article WHERE id = ?", [articleId], (err) => {
+
+  db.query("DELETE FROM products WHERE id = ?", [articleId], (err) => {
     if (err) {
-      console.error("Erreur lors de la suppression de l'article :", err);
+      console.error("Erreur lors de la suppression du produit :", err);
       res.status(500).send("Erreur serveur");
       return;
     }
@@ -214,6 +211,41 @@ app.post('/signup', (req, res) => {
     });
   });
 });
+
+
+// Route pour récupérer toutes les daily list
+app.get("/daily-list", (req, res) => {
+  db.query("SELECT * FROM daily_list", (err, results) => {
+    if (err) {
+      console.error("Erreur lors de la récupération des listes :", err);
+      res.status(500).send("Erreur serveur");
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Route pour récupérer une daily list par son ID
+app.get("/daily-list/:id", (req, res) => {
+  const articleId = req.params.id;
+  db.query(
+    "SELECT * FROM daily_list WHERE id = ?",
+    [articleId],
+    (err, results) => {
+      if (err) {
+        console.error("Erreur lors de la récupération de la list :", err);
+        res.status(500).send("Erreur serveur");
+        return;
+      }
+      if (results.length === 0) {
+        res.status(404).send("Liste non trouvée");
+        return;
+      }
+      res.json(results[0]);
+    }
+  );
+});
+
 
 // Middleware pour vérifier le token JWT
 function authenticateToken(req, res, next) {

@@ -1,60 +1,62 @@
-<form (ngSubmit)="onAddArticle()" [formGroup]="formulaire">
-  <mat-form-field>
-    <mat-label>Nom du produit</mat-label>
-    <input matInput formControlName="title" />
-    <mat-error>Le nom du produit est obligatoire</mat-error>
-  </mat-form-field>
+<div class="container">
+  <div class="row">
+    <div class="col-6 mx-auto">
+      <form (ngSubmit)="onAddProduct()" [formGroup]="formulaire">
 
-  <mat-form-field>
-    <mat-label>Quantité de lipides</mat-label>
-    <textarea matInput formControlName="body"></textarea>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
-      Le contenu est obligatoire
-    </mat-error>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
-      Le contenu doit avoir 5 caractères au minimum
-    </mat-error>
-  </mat-form-field>
+        <mat-card class="example-card">
+          <mat-card-header>
+            <mat-form-field>
+              <mat-label>Nom du produit</mat-label>
+              <input matInput formControlName="name" />
+              <mat-error>Le nom du produit est obligatoire</mat-error>
+            </mat-form-field>
+          </mat-card-header>
+          <mat-card-content>
 
-  <mat-form-field>
-    <mat-label>Quantité de glucides</mat-label>
-    <textarea matInput formControlName="body"></textarea>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
-      Le contenu est obligatoire
-    </mat-error>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
-      Le contenu doit avoir 5 caractères au minimum
-    </mat-error>
-  </mat-form-field>
+            <mat-form-field>
+              <mat-label>Quantité de lipides</mat-label>
+              <input matInput formControlName="lipid" type="number" (change)="calculCalories()"/><span matTextSuffix>&nbsp;g</span>
+              <mat-error>
+                Merci d'indiquer une quantité valide
+              </mat-error>
+            </mat-form-field><br>
 
-  <mat-form-field>
-    <mat-label>Quantité de calories</mat-label>
-    <textarea matInput formControlName="body"></textarea>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
-      Le contenu est obligatoire
-    </mat-error>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
-      Le contenu doit avoir 5 caractères au minimum
-    </mat-error>
-  </mat-form-field>
+            <mat-form-field>
+              <mat-label>Quantité de glucides</mat-label>
+              <input matInput formControlName="carbohydrate" type="number" (change)="calculCalories()"/><span matTextSuffix>&nbsp;g</span>
+              <mat-error>
+                Merci d'indiquer une quantité valide
+              </mat-error>
+            </mat-form-field><br>
 
-  <mat-form-field>
-    <mat-label>Quantité de protéines</mat-label>
-    <textarea matInput formControlName="body"></textarea>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('required')">
-      Le contenu est obligatoire
-    </mat-error>
-    <mat-error *ngIf="formulaire.get('body')?.hasError('minlength')">
-      Le contenu doit avoir 5 caractères au minimum
-    </mat-error>
-  </mat-form-field>
-  <div>
-    <button mat-raised-button type="submit" color="primary">
-      {{ modifiedArticle ? "Modifier" : "Ajouter" }}
-    </button>
+            <mat-form-field>
+              <mat-label>Quantité de protéines</mat-label>
+              <input matInput formControlName="protein" type="number" (change)="calculCalories()"/><span matTextSuffix>&nbsp;g</span>
+              <mat-error>
+                Merci d'indiquer une quantité valide
+              </mat-error>
+            </mat-form-field><br>
+            
+            <div>
+              <mat-label>Quantité de calories : </mat-label>
+              <p matInput>{{ calories }} cal</p>
+            </div>
+            
 
-    <a mat-raised-button class="ms-2" routerLink="/accueil" color="warn">
-      Annuler
-    </a>
+            <mat-divider></mat-divider>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-raised-button type="submit" color="primary" class="me-2">
+              {{ modifiedArticle ? "Modifier" : "Ajouter" }}
+            </button>
+            <a mat-stroked-button class="ms-2" routerLink="/home" color="accent">
+              Annuler
+            </a>
+          </mat-card-actions>
+        </mat-card>
+      </form>
+    </div>
   </div>
-</form>
+</div>
+
+

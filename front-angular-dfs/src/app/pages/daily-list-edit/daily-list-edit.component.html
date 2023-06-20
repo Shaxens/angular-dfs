@@ -1,0 +1,39 @@
+<div class="container">
+  <div class="row">
+    <div class="col-6 mx-auto mt-4">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Ajouter un repas</mat-card-title>
+        </mat-card-header>
+      
+        <mat-card-content>
+          <h3>{{ modifiedArticle?.type }}</h3>
+          <form [formGroup]="formulaire" (ngSubmit)="onSubmit()">
+      
+            <mat-form-field>
+              <mat-select placeholder="Produit" formControlName="product">
+                <mat-option *ngFor="let product of existingProducts" [value]="product.name">
+                  {{ product.name }} ({{ product.calories }} calories)
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="formulaire.get('product')?.invalid && formulaire.get('product')?.touched">
+                Le nom du produit est requis.
+              </mat-error>
+            </mat-form-field>
+            
+          </form>
+        </mat-card-content>
+      
+        <mat-card-actions>
+          <button mat-raised-button color="primary" type="submit" [disabled]="formulaire.invalid">
+            Enregistrer
+          </button>
+          <button mat-raised-button color="warn" type="button" [routerLink]="['/daily-list']">
+            Annuler
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>
+

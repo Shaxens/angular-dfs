@@ -1,16 +1,18 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { Products } from 'src/app/models/Products';
+import { DailyList } from 'src/app/models/DailyList';
 import { Jwt } from 'src/app/models/Jwt';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  selector: 'app-daily-list',
+  templateUrl: './daily-list.component.html',
+  styleUrls: ['./daily-list.component.scss']
 })
-export class HomeComponent {
-  productList: Products[] = [];
+export class DailyListComponent {
+
+  dailyList: DailyList[] = [];
+  filename: File | null = null;
 
   jwt: Jwt | null = null;
 
@@ -21,12 +23,12 @@ export class HomeComponent {
 
   refresh() {
     this.http
-      .get<Products[]>('http://localhost:3000/products')
-      .subscribe((productList) => (this.productList = productList));
+      .get<DailyList[]>('http://localhost:3000/daily-list')
+      .subscribe((dailyList) => (this.dailyList = dailyList));
   }
 
-  onDeleteArticle(id: number) {
-    this.http.delete('http://localhost:3000/product/' + id).subscribe({
+  onDeleteList(id: number) {
+    this.http.delete('http://localhost:3000/daily-list/' + id).subscribe({
       next: (result) => this.refresh(),
       error: (error) => alert(JSON.stringify(error)),
     });

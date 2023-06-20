@@ -11,9 +11,20 @@ import { Products } from 'src/app/models/Products';
 })
 export class EditProductComponent {
   formulaire: FormGroup = this.formBuilder.group({
-    title: ['', [Validators.required]],
-    body: ['', [Validators.required, Validators.minLength(5)]],
+    name: ['', [Validators.required]],
+    lipid: ['', [Validators.required, Validators.maxLength(5)]],
+    carbohydrate: ['', [Validators.required, Validators.maxLength(5)]],
+    protein: ['', [Validators.required, Validators.maxLength(5)]],
   });
+
+  calories: number = 0;
+  
+  calculCalories() {
+    this.calories = ((this.formulaire.value.lipid * 9) + (this.formulaire.value.carbohydrate * 4) + (this.formulaire.value.protein * 4));
+    console.log(this.calories)
+    return this.calories;
+  }
+
 
   modifiedArticle?: Products;
   selectedFile: File | null = null;
@@ -25,10 +36,11 @@ export class EditProductComponent {
     private router: Router,
     private route: ActivatedRoute
   ) {
+    this.calculCalories()
     this.route.params.subscribe((parameters) => {
       if (parameters['id'] !== undefined) {
         this.http
-          .get<Products>('http://localhost:3000/article/' + parameters['id'])
+          .get<Products>('http://localhost:3000/product/' + parameters['id'])
           .subscribe({
             next: (result) => {
               this.formulaire.patchValue(result),
@@ -43,37 +55,33 @@ export class EditProductComponent {
     });
   }
 
-  onAddArticle() {
+  onAddProduct() {
     if (this.formulaire.valid) {
       if (this.modifiedArticle) {
         const formData: FormData = new FormData();
-
-        formData.append('article', JSON.stringify(this.formulaire.value))
-        if (this.selectedFile) {
-          formData.append('file', this.selectedFile)
-        }
+        const productData = {...this.formulaire.value, calories: this.calculCalories()}
+        formData.append('product', JSON.stringify(productData))
 
         this.http
           .put(
-            'http://localhost:3000/article/' + this.modifiedArticle.id,
+            'http://localhost:3000/product/' + this.modifiedArticle.id,
             formData
           )
           .subscribe({
-            next: (resultat) => this.router.navigateByUrl('/accueil'),
+            next: (resultat) => this.router.navigateByUrl('/home'),
             error: (reponse) => alert(reponse.error),
           });
       } else {
         const formData: FormData = new FormData();
 
-        formData.append('article', JSON.stringify(this.formulaire.value))
-        if (this.selectedFile) {
-          formData.append('file', this.selectedFile)
-        }
+        const productData = {...this.formulaire.value, calories: this.calculCalories()}
+        formData.append('product', JSON.stringify(productData))
+
 
         this.http
-          .post('http://localhost:3000/article', formData)
+          .post('http://localhost:3000/product', formData)
           .subscribe({
-            next: (result) => this.router.navigateByUrl('/accueil'),
+            next: (result) => this.router.navigateByUrl('/home'),
             error: (error) => alert(error),
           });
       }
@@ -83,4 +91,6 @@ export class EditProductComponent {
   onSelectedImage(file: File | null) {
     this.selectedFile = file;
   }
+
+
 }

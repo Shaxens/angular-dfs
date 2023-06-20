@@ -5,6 +5,8 @@ import { HomeComponent } from './pages/home/home.component';
 import { authGuard } from './services/auth.guard';
 import { SignupComponent } from './pages/signup/signup.component';
 import { EditProductComponent } from './pages/edit-product/edit-product.component';
+import { DailyListComponent } from './pages/daily-list/daily-list.component';
+import { DailyListEditComponent } from './pages/daily-list-edit/daily-list-edit.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -13,10 +15,24 @@ const routes: Routes = [
     component: HomeComponent,
     canActivate: [authGuard],
   },
-  { path: 'add-product', component: EditProductComponent },
+  {
+    path: 'daily-list',
+    component: DailyListComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'modify-list/:id',
+    component: DailyListEditComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'add-product',
+    component: EditProductComponent,
+    canActivate: [authGuard],
+  },
+  { path: 'modify-product/:id', component: EditProductComponent },
   { path: 'signup', component: SignupComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', component: LoginComponent }
 ];
 
 @NgModule({
