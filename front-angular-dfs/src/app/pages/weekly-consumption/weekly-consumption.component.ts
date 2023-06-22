@@ -84,12 +84,6 @@ export class WeeklyConsumptionComponent implements OnInit {
       });
   }
   
-  
-
-  
-  
-  
-  
 
   formatDate(dateString: string): string {
     const options: Intl.DateTimeFormatOptions = {

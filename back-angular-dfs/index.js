@@ -379,6 +379,29 @@ cron.schedule('0 0 * * *', () => {
 });
 
 
+// Renvoie les données calculées pour le graphique
+app.get("/weekly-consumption", authenticateToken, (req, res) => {
+  const userId = req.user.user_id;
+  const query = `
+    SELECT SUM(calories) AS total_calories, date, type
+    FROM daily_list
+    WHERE user_id = ?
+      AND date >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+      AND type IN ('Petit déjeuner', 'Repas de midi', 'Encas', 'Repas du soir')
+    GROUP BY date, type
+  `;
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error("Erreur lors de la récupération des données :", err);
+      res.status(500).send("Erreur serveur");
+      return;
+    }
+    res.json(results);
+  });
+});
+
+
+
 // Middleware pour vérifier le token JWT et récupérer l'ID de l'utilisateur
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
