@@ -25,6 +25,8 @@ import { EditProductComponent } from './pages/edit-product/edit-product.componen
 import { DailyListComponent } from './pages/daily-list/daily-list.component';
 import { DailyListEditComponent } from './pages/daily-list-edit/daily-list-edit.component';
 import {MatSelectModule} from '@angular/material/select';
+import { WeeklyConsumptionComponent } from './pages/weekly-consumption/weekly-consumption.component';
+import { WeeklyConsumptionResolver } from './resolvers/weekly-consumption.resolver';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,8 @@ import {MatSelectModule} from '@angular/material/select';
     SignupComponent,
     EditProductComponent,
     DailyListComponent,
-    DailyListEditComponent
+    DailyListEditComponent,
+    WeeklyConsumptionComponent
   ],
   imports: [
     BrowserModule,
@@ -61,7 +64,8 @@ import {MatSelectModule} from '@angular/material/select';
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     JwtHelperService,
-    DailyListResolver
+    DailyListResolver,
+    WeeklyConsumptionResolver
   ],
   bootstrap: [AppComponent]
 })

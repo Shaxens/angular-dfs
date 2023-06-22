@@ -8,6 +8,8 @@ import { EditProductComponent } from './pages/edit-product/edit-product.componen
 import { DailyListComponent } from './pages/daily-list/daily-list.component';
 import { DailyListEditComponent } from './pages/daily-list-edit/daily-list-edit.component';
 import { DailyListResolver } from './resolvers/daily-list.resolver';
+import { WeeklyConsumptionComponent } from './pages/weekly-consumption/weekly-consumption.component';
+import { WeeklyConsumptionResolver } from './resolvers/weekly-consumption.resolver';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -32,6 +34,12 @@ const routes: Routes = [
     canActivate: [authGuard],
   },
   { path: 'modify-product/:id', component: EditProductComponent },
+  { 
+    path: 'weekly-consumption',
+    component: WeeklyConsumptionComponent,
+    canActivate: [authGuard],
+    resolve: { weeklyData: WeeklyConsumptionResolver }
+  },
   { path: 'signup', component: SignupComponent },
   { path: '*', redirectTo: 'login', pathMatch: 'full' },
 ];

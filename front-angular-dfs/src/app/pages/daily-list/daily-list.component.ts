@@ -4,7 +4,6 @@ import { DailyList } from 'src/app/models/DailyList';
 import { Jwt } from 'src/app/models/Jwt';
 import { AuthService } from 'src/app/services/auth.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { DailyListResolver } from 'src/app/resolvers/daily-list.resolver';
 
 @Component({
   selector: 'app-daily-list',
@@ -14,11 +13,10 @@ import { DailyListResolver } from 'src/app/resolvers/daily-list.resolver';
 export class DailyListComponent {
 
   dailyList: DailyList[] = [];
-  filename: File | null = null;
 
   jwt: Jwt | null = null;
 
-  constructor(private dailyListResolver: DailyListResolver, private http: HttpClient, private auth: AuthService, private jwtHelper: JwtHelperService) {
+  constructor(private http: HttpClient, private auth: AuthService, private jwtHelper: JwtHelperService) {
     this.auth.$jwt.subscribe((jwt) => (this.jwt = jwt));
   }
 
