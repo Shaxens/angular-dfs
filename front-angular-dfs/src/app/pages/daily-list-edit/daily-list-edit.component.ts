@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DailyList } from 'src/app/models/DailyList';
 import { Products } from 'src/app/models/Products';
 
@@ -22,7 +22,8 @@ export class DailyListEditComponent {
   constructor(
     private formBuilder: FormBuilder,
     private http: HttpClient,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
   ) {
     this.route.params.subscribe((parameters) => {
       if (parameters['id'] !== undefined) {
@@ -43,13 +44,31 @@ export class DailyListEditComponent {
   }
 
   onSubmit() {
-    if (this.formulaire.valid) {
-      console.log(this.formulaire.value);
-      this.formulaire.reset();
-    }
+          console.log('Modification réussie !');
+    const id = this.route.snapshot.params['id'];
+    const updatedData = {
+      product: this.formulaire.value.product.name,
+      calories: this.formulaire.value.product.calories
+    };
+  
+    this.http.put(`http://localhost:3000/daily-list/${id}`, updatedData)
+      .subscribe({
+        next: (response) => {
+          console.log('Modification réussie !');
+          this.router.navigateByUrl('/daily-list');
+        },
+        error: (response) => {
+          console.error('Erreur lors de la modification :', response);
+          alert(response.error);
+        }
+      });
   }
+  
+  
+  
 
   onCancel() {
     this.formulaire.reset();
+    this.router.navigateByUrl('/daily-list');
   }
 }

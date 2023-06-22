@@ -5,6 +5,7 @@ const cors = require("cors");
 const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cron = require('node-cron');
 
 app.use(cors());
 
@@ -161,7 +162,7 @@ app.post("/login", (req, res) => {
 
       // Générer un token JWT
       const token = jwt.sign(
-        { email: user.email, admin: user.admin },
+        { email: user.email, admin: user.admin, user_id: user.id },
         "your_secret_key",
         { expiresIn: "1d" } // Expiration du token
       );
@@ -197,10 +198,28 @@ app.post('/signup', (req, res) => {
         if (insertErr) {
           throw insertErr;
         }
+        const user_id = insertResult.insertId;
+
+        // Créer la liste journalière de l'utilisateur à la création du compte
+        const currentDate = new Date().toISOString().slice(0, 10);
+        const types = [
+          { type: 'Petit déjeuner', image: 'breakfast.png' },
+          { type: 'Repas de midi', image: 'meal.png' },
+          { type: 'Encas', image: 'snack.png' },
+          { type: 'Repas du soir', image: 'nightMeat.png' }
+        ];
+
+        types.forEach((item) => {
+          db.query('INSERT INTO daily_list (user_id, date, type, picture) VALUES (?, ?, ?, ?)', [user_id, currentDate, item.type, item.image], (dailyListErr, dailyListResult) => {
+            if (dailyListErr) {
+              throw dailyListErr;
+            }
+          });
+        });
 
         // Générer un token JWT pour l'utilisateur nouvellement inscrit
         const token = jwt.sign(
-          { email, admin },
+          { email, admin, user_id },
           'your_secret_key',
           { expiresIn: '1h' } // Expiration du token
         );
@@ -214,16 +233,23 @@ app.post('/signup', (req, res) => {
 
 
 // Route pour récupérer toutes les daily list
-app.get("/daily-list", (req, res) => {
-  db.query("SELECT * FROM daily_list", (err, results) => {
-    if (err) {
-      console.error("Erreur lors de la récupération des listes :", err);
-      res.status(500).send("Erreur serveur");
-      return;
+app.get("/daily-list", authenticateToken, (req, res) => {
+  const currentDate = new Date().toISOString().split('T')[0];
+  const userId = req.user.user_id;
+  db.query(
+    "SELECT * FROM daily_list WHERE user_id = ? AND date = ?",
+    [userId, currentDate],
+    (err, results) => {
+      if (err) {
+        console.error("Erreur lors de la récupération des listes :", err);
+        res.status(500).send("Erreur serveur");
+        return;
+      }
+      res.json(results);
     }
-    res.json(results);
-  });
+  );
 });
+
 
 // Route pour récupérer une daily list par son ID
 app.get("/daily-list/:id", (req, res) => {
@@ -246,8 +272,114 @@ app.get("/daily-list/:id", (req, res) => {
   );
 });
 
+// Route pour mettre à jour la liste journalière
+app.put("/daily-list/:id", upload, (req, res) => {
+  const dailyListId = req.params.id;
+  const updatedData = {
+    product: req.body.product,
+    calories: req.body.calories
+  };
+  db.query(
+    "UPDATE daily_list SET ? WHERE id = ?",
+    [updatedData, dailyListId],
+    (err) => {
+      if (err) {
+        console.error("Erreur lors de la mise à jour de la liste quotidienne :", err);
+        res.status(500).send("Erreur serveur");
+        return;
+      }
+      res.status(200).json(updatedData);
+    }
+  );
+});
 
-// Middleware pour vérifier le token JWT
+
+// Route pour supprimer un produit d'une liste journalière
+app.delete("/daily-list/:id", authenticateToken, (req, res) => {
+  const dailyListId = req.params.id;
+
+  db.query("UPDATE daily_list SET product = NULL, calories = NULL WHERE id = ?", [dailyListId], (err) => {
+    if (err) {
+      console.error("Erreur lors de la suppression du produit :", err);
+      res.status(500).send("Erreur serveur");
+      return;
+    }
+    res.sendStatus(204);
+  });
+});
+
+// Méthode pour récupérer tous les utilisateurs de la base de données
+function getAllUsers(callback) {
+  db.query('SELECT * FROM user', (err, results) => {
+    if (err) {
+      console.error('Erreur lors de la récupération des utilisateurs :', err);
+      callback(err, null);
+    } else {
+      callback(null, results);
+    }
+  });
+}
+
+function addDailyTypes(userId) {
+  const currentDate = new Date().toISOString().split('T')[0];
+
+  const types = [
+    { type: 'Petit déjeuner', image: 'breakfast.png' },
+    { type: 'Repas de midi', image: 'meal.png' },
+    { type: 'Encas', image: 'snack.png' },
+    { type: 'Repas du soir', image: 'nightMeat.png' }
+  ];
+  
+  types.forEach((item) => {
+
+    db.query('INSERT INTO daily_list (user_id, date, type, picture) VALUES (?, ?, ?, ?)', [userId, currentDate, item.type, item.image], (dailyListErr, dailyListResult) => {
+      if (dailyListErr) {
+        console.error('Erreur lors de l\'ajout des types de plats :', dailyListErr);
+      } else {
+        console.log(`Type de plat "${item}" ajouté avec succès pour la date ${currentDate}`);
+      }
+    });
+  });
+}
+
+
+function deleteOldTypes(userId) {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  
+  const formattedDate = oneWeekAgo.toISOString().split('T')[0]; // Formatte la date au format "YYYY-MM-DD"
+  
+  db.query('DELETE FROM daily_list WHERE date < ?', [formattedDate, userId], (err, result) => {
+    if (err) {
+      console.error('Erreur lors de la suppression des anciens types de plats :', err);
+    } else {
+      console.log(`Types de plats datant d'il y a plus d'une semaine ont été supprimés`);
+    }
+  });
+}
+
+// Fonction pour exécuter les tâches planifiées pour chaque utilisateur
+function executeScheduledTasksForUsers() {
+  getAllUsers((err, users) => {
+    if (err) {
+      console.error('Erreur lors de la récupération des utilisateurs :', err);
+      return;
+    }
+
+    users.forEach((user) => {
+      addDailyTypes(user.id);
+      deleteOldTypes(user.id);
+    });
+  });
+}
+
+// Planifie l'exécution de l'ajout et suppression des types de plats chaque jour à 00:00
+cron.schedule('0 0 * * *', () => {
+  executeScheduledTasksForUsers();
+});
+
+
+// Middleware pour vérifier le token JWT et récupérer l'ID de l'utilisateur
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -256,13 +388,17 @@ function authenticateToken(req, res, next) {
     return res.sendStatus(401);
   }
 
-  jwt.verify(token, 'your_secret_key', (err, user) => {
+  jwt.verify(token, 'your_secret_key', (err, decodedToken) => {
     if (err) {
       return res.sendStatus(403);
     }
 
-    req.user = user;
+    req.user = {
+      user_id: decodedToken.user_id,
+    };
     next();
   });
 }
+
+
 

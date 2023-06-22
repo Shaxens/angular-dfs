@@ -12,7 +12,7 @@
       
             <mat-form-field>
               <mat-select placeholder="Produit" formControlName="product">
-                <mat-option *ngFor="let product of existingProducts" [value]="product.name">
+                <mat-option *ngFor="let product of existingProducts" [value]="product">
                   {{ product.name }} ({{ product.calories }} calories)
                 </mat-option>
               </mat-select>
@@ -21,17 +21,18 @@
               </mat-error>
             </mat-form-field>
             
+            <mat-card-actions>
+              <button mat-raised-button type="submit" color="primary" class="me-2" [disabled]="formulaire.invalid">
+              Enregistrer
+            </button>
+            <button mat-raised-button color="warn" type="button" [routerLink]="['/daily-list']">
+              Annuler
+            </button>
+          </mat-card-actions>
           </form>
         </mat-card-content>
       
-        <mat-card-actions>
-          <button mat-raised-button color="primary" type="submit" [disabled]="formulaire.invalid">
-            Enregistrer
-          </button>
-          <button mat-raised-button color="warn" type="button" [routerLink]="['/daily-list']">
-            Annuler
-          </button>
-        </mat-card-actions>
+
       </mat-card>
     </div>
   </div>

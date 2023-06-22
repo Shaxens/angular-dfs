@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Jwt } from './models/Jwt';
+import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 
 @Component({
@@ -10,11 +11,12 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
   jwt: Jwt | null = null;
 
-  constructor(private auth: AuthService) {
+  constructor(private auth: AuthService, private router: Router) {
     this.auth.$jwt.subscribe((jwt) => this.jwt = jwt);
   }
 
   onLogout() {
     this.auth.logout();
+    this.router.navigateByUrl('/login')
   }
 }

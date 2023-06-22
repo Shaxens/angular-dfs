@@ -7,18 +7,19 @@ import { SignupComponent } from './pages/signup/signup.component';
 import { EditProductComponent } from './pages/edit-product/edit-product.component';
 import { DailyListComponent } from './pages/daily-list/daily-list.component';
 import { DailyListEditComponent } from './pages/daily-list-edit/daily-list-edit.component';
+import { DailyListResolver } from './resolvers/daily-list.resolver';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   {
     path: 'home',
     component: HomeComponent,
-    canActivate: [authGuard],
   },
   {
     path: 'daily-list',
     component: DailyListComponent,
     canActivate: [authGuard],
+    resolve: { dailyList: DailyListResolver }
   },
   {
     path: 'modify-list/:id',
@@ -32,7 +33,7 @@ const routes: Routes = [
   },
   { path: 'modify-product/:id', component: EditProductComponent },
   { path: 'signup', component: SignupComponent },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '*', redirectTo: 'login', pathMatch: 'full' },
 ];
 
 @NgModule({
