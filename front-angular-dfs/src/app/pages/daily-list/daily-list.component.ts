@@ -4,6 +4,7 @@ import { DailyList } from 'src/app/models/DailyList';
 import { Jwt } from 'src/app/models/Jwt';
 import { AuthService } from 'src/app/services/auth.service';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { Products } from 'src/app/models/Products';
 
 @Component({
   selector: 'app-daily-list',
@@ -13,6 +14,7 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 export class DailyListComponent {
 
   dailyList: DailyList[] = [];
+  existingProducts: { [key: number]: Products } = {};
 
   jwt: Jwt | null = null;
 
@@ -22,6 +24,7 @@ export class DailyListComponent {
 
   ngOnInit() {
     this.refresh();
+    this.loadProducts();
   }
 
   refresh() {
@@ -44,7 +47,15 @@ export class DailyListComponent {
       .subscribe((dailyList) => (this.dailyList = dailyList));
   }
 
-
+  loadProducts() {
+    this.http.get<Products[]>('http://localhost:3000/products').subscribe((products) => {
+      this.existingProducts = products.reduce((acc, product) => {
+        acc[product.id] = product;
+        return acc;
+      }, {} as { [key: number]: Products });
+    });
+  }
+  
   onDeleteList(id: number) {
     this.http.delete('http://localhost:3000/daily-list/' + id).subscribe({
       next: (result) => this.refresh(),

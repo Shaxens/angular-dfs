@@ -5,10 +5,19 @@
       <h1>Ma consommation de la semaine</h1>
     </div>
   </div>
+  <div class="row justify-content-center">
+    <div class="col-6 text-center">
+      <div id="alertContainer" class="alert alert-info alert-dismissible fade show " role="alert">
+        <div class="flex-grow-1">Les filtres sont cliquables !</div>
+        <button type="button" class="btn btn-info close mt-2" data-dismiss="alert" aria-label="Close" (click)="closeAlert()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="row">
     <div class="col">
       <canvas id="myChart"></canvas>
     </div>
   </div>
 </div>
-

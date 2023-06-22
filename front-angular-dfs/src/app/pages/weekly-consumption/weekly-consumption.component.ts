@@ -4,19 +4,26 @@ import Chart from 'chart.js/auto';
 import { Jwt } from 'src/app/models/Jwt';
 import { AuthService } from 'src/app/services/auth.service';
 import { getUserIdFromLocalStorage } from 'src/app/utils/auth.helper';
+import { ExtendedChartDataset } from 'src/app/utils/chart-extensions';
+
+interface WeeklyConsumptionData {
+  total_calories: number;
+  total_lipids: number;
+  total_carbohydrates: number;
+  total_proteins: number;
+  date: string;
+  type: string;
+}
 
 @Component({
   selector: 'app-weekly-consumption',
   templateUrl: './weekly-consumption.component.html',
-  styleUrls: ['./weekly-consumption.component.scss']
+  styleUrls: ['./weekly-consumption.component.scss'],
 })
 export class WeeklyConsumptionComponent implements OnInit {
   jwt: Jwt | null = null;
 
-  constructor(
-    private http: HttpClient,
-    private auth: AuthService,
-  ) {
+  constructor(private http: HttpClient, private auth: AuthService) {
     this.auth.$jwt.subscribe((jwt) => (this.jwt = jwt));
   }
 
@@ -28,30 +35,36 @@ export class WeeklyConsumptionComponent implements OnInit {
     // Make the HTTP request to fetch the weekly consumption data
     const userId = getUserIdFromLocalStorage();
     this.http
-      .get<any[]>(`http://localhost:3000/weekly-consumption?user_id=${userId}`)
-      .subscribe((data: any[]) => {
+      .get<WeeklyConsumptionData[]>(
+        `http://localhost:3000/weekly-consumption?user_id=${userId}`
+      )
+      .subscribe((data: WeeklyConsumptionData[]) => {
         // Sort the data by date in ascending order
-        data.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        data.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
   
         // Extract the unique dates and types of meals
         const uniqueDates = [...new Set(data.map((entry) => entry.date))];
         const uniqueMealTypes = [...new Set(data.map((entry) => entry.type))];
   
-        // Prepare the dataset for each meal type
+        // Prepare the datasets
         const datasets = uniqueMealTypes.map((mealType) => {
-          const calories = data
-            .filter((entry) => entry.type === mealType)
-            .map((entry) => entry.total_calories);
+          const filteredData = data.filter((entry) => entry.type === mealType);
   
-          const backgroundColor = this.getColorByMealType(mealType);
-  
-          return {
+          const dataset = {
             label: mealType,
-            data: calories,
-            backgroundColor: backgroundColor,
-            borderColor: backgroundColor,
+            data: filteredData.map((entry) => entry.total_calories),
+            calories: filteredData.map((entry) => entry.total_calories),
+            lipids: filteredData.map((entry) => entry.total_lipids),
+            carbohydrates: filteredData.map((entry) => entry.total_carbohydrates),
+            proteins: filteredData.map((entry) => entry.total_proteins),
+            backgroundColor: this.getColorByMealType(mealType),
+            borderColor: this.getColorByMealType(mealType),
             borderWidth: 1,
           };
+  
+          return dataset;
         });
   
         // Generate the chart
@@ -73,8 +86,13 @@ export class WeeklyConsumptionComponent implements OnInit {
                 callbacks: {
                   label: (context) => {
                     const label = context.dataset.label || '';
-                    const value = context.parsed.y || 0;
-                    return `${label}: ${value} Calories`;
+                    const dataIndex = context.dataIndex;
+                    const dataset = context.dataset as unknown as ExtendedChartDataset;
+                    const calories = dataset.calories[dataIndex];
+                    const lipids = dataset.lipids[dataIndex];
+                    const carbohydrates = dataset.carbohydrates[dataIndex];
+                    const proteins = dataset.proteins[dataIndex];
+                    return `${label}: ${calories} Calories, Lipides: ${lipids}g, Glucides: ${carbohydrates}g, Protéines: ${proteins}g`;
                   },
                 },
               },
@@ -90,7 +108,7 @@ export class WeeklyConsumptionComponent implements OnInit {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     };
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', options);
@@ -110,4 +128,13 @@ export class WeeklyConsumptionComponent implements OnInit {
         return 'rgba(0, 0, 0, 0.2)';
     }
   }
+
+  closeAlert() {
+    const alertContainer = document.getElementById('alertContainer') as HTMLElement;
+    if (alertContainer) {
+      alertContainer.style.display = 'none';
+    }
+  }
+
 }
+

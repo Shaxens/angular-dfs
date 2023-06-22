@@ -11,30 +11,35 @@
           <form [formGroup]="formulaire" (ngSubmit)="onSubmit()">
       
             <mat-form-field>
-              <mat-select placeholder="Produit" formControlName="product">
-                <mat-option *ngFor="let product of existingProducts" [value]="product">
-                  {{ product.name }} ({{ product.calories }} calories)
+              <mat-select placeholder="Produit" formControlName="product" (ngModelChange)="onProductChange($event)">
+                <mat-option *ngFor="let product of existingProducts" [value]="product.id">
+                  {{ product.name }}
                 </mat-option>
               </mat-select>
               <mat-error *ngIf="formulaire.get('product')?.invalid && formulaire.get('product')?.touched">
-                Le nom du produit est requis.
+                Le produit est requis.
               </mat-error>
             </mat-form-field>
             
+            <div *ngIf="selectedProduct">
+              <p>Calories: {{ getProductDetails(selectedProduct)?.calories }}</p>
+              <p>Lipides: {{ getProductDetails(selectedProduct)?.lipid }}</p>
+              <p>Glucides: {{ getProductDetails(selectedProduct)?.carbohydrate }}</p>
+              <p>Protéines: {{ getProductDetails(selectedProduct)?.protein }}</p>
+            </div>
+
+            
             <mat-card-actions>
               <button mat-raised-button type="submit" color="primary" class="me-2" [disabled]="formulaire.invalid">
-              Enregistrer
-            </button>
-            <button mat-raised-button color="warn" type="button" [routerLink]="['/daily-list']">
-              Annuler
-            </button>
-          </mat-card-actions>
+                Enregistrer
+              </button>
+              <button mat-raised-button color="warn" type="button" (click)="onCancel()">
+                Annuler
+              </button>
+            </mat-card-actions>
           </form>
         </mat-card-content>
-      
-
       </mat-card>
     </div>
   </div>
 </div>
-

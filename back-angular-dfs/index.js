@@ -2,22 +2,16 @@ const express = require("express");
 const multer = require("multer");
 const app = express();
 const cors = require("cors");
-const mysql = require("mysql");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const scheduler = require('./scheduler/scheduler.js');
+const authenticateToken = require('./middlewares/authenticateToken.js')
+const db = require('./db');
 const cron = require('node-cron');
 
 app.use(cors());
 
 app.use(express.static("uploads"));
-
-// Configuration de la base de données
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "angular-dfs",
-});
 
 // Connexion à la base de données
 db.connect((err) => {
@@ -30,6 +24,12 @@ db.connect((err) => {
 
 // Configuration du middleware pour le parsing du corps de la requête
 app.use(express.json());
+
+
+// Tous les jours a minuit on créé la daily-list pour chaque user et on supprime celles qui date de plus d'une semaine
+cron.schedule('0 0 * * *', () => {
+  scheduler.executeScheduledTasksForUsers();
+});
 
 // Route pour récupérer tous les products
 app.get("/products", (req, res) => {
@@ -115,29 +115,30 @@ app.put("/product/:id", upload, (req, res) => {
   );
 });
 
-// Route pour supprimer un product
+// Route pour supprimer un produit
 app.delete("/product/:id", authenticateToken, (req, res) => {
   const articleId = req.params.id;
-
-  if(req.user.admin != 1) {
-    res.sendStatus(403);
+  console.log(req.user)
+  if (req.user.admin != 1) {
+    return res.sendStatus(403);
   }
-
 
   db.query("DELETE FROM products WHERE id = ?", [articleId], (err) => {
     if (err) {
       console.error("Erreur lors de la suppression du produit :", err);
-      res.status(500).send("Erreur serveur");
-      return;
+      return res.status(500).send("Erreur serveur");
     }
     res.sendStatus(204);
   });
 });
 
+
+
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
+
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
@@ -172,6 +173,8 @@ app.post("/login", (req, res) => {
     });
   });
 });
+
+
 
 // Point de terminaison pour l'inscription
 app.post('/signup', (req, res) => {
@@ -275,10 +278,7 @@ app.get("/daily-list/:id", (req, res) => {
 // Route pour mettre à jour la liste journalière
 app.put("/daily-list/:id", upload, (req, res) => {
   const dailyListId = req.params.id;
-  const updatedData = {
-    product: req.body.product,
-    calories: req.body.calories
-  };
+  const updatedData = { product_id: req.body.product_id };
   db.query(
     "UPDATE daily_list SET ? WHERE id = ?",
     [updatedData, dailyListId],
@@ -294,11 +294,12 @@ app.put("/daily-list/:id", upload, (req, res) => {
 });
 
 
+
 // Route pour supprimer un produit d'une liste journalière
 app.delete("/daily-list/:id", authenticateToken, (req, res) => {
   const dailyListId = req.params.id;
 
-  db.query("UPDATE daily_list SET product = NULL, calories = NULL WHERE id = ?", [dailyListId], (err) => {
+  db.query("UPDATE daily_list SET product_id = NULL WHERE id = ?", [dailyListId], (err) => {
     if (err) {
       console.error("Erreur lors de la suppression du produit :", err);
       res.status(500).send("Erreur serveur");
@@ -308,87 +309,29 @@ app.delete("/daily-list/:id", authenticateToken, (req, res) => {
   });
 });
 
-// Méthode pour récupérer tous les utilisateurs de la base de données
-function getAllUsers(callback) {
-  db.query('SELECT * FROM user', (err, results) => {
-    if (err) {
-      console.error('Erreur lors de la récupération des utilisateurs :', err);
-      callback(err, null);
-    } else {
-      callback(null, results);
-    }
-  });
-}
-
-function addDailyTypes(userId) {
-  const currentDate = new Date().toISOString().split('T')[0];
-
-  const types = [
-    { type: 'Petit déjeuner', image: 'breakfast.png' },
-    { type: 'Repas de midi', image: 'meal.png' },
-    { type: 'Encas', image: 'snack.png' },
-    { type: 'Repas du soir', image: 'nightMeat.png' }
-  ];
-  
-  types.forEach((item) => {
-
-    db.query('INSERT INTO daily_list (user_id, date, type, picture) VALUES (?, ?, ?, ?)', [userId, currentDate, item.type, item.image], (dailyListErr, dailyListResult) => {
-      if (dailyListErr) {
-        console.error('Erreur lors de l\'ajout des types de plats :', dailyListErr);
-      } else {
-        console.log(`Type de plat "${item}" ajouté avec succès pour la date ${currentDate}`);
-      }
-    });
-  });
-}
 
 
-function deleteOldTypes(userId) {
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  
-  const formattedDate = oneWeekAgo.toISOString().split('T')[0]; // Formatte la date au format "YYYY-MM-DD"
-  
-  db.query('DELETE FROM daily_list WHERE date < ?', [formattedDate, userId], (err, result) => {
-    if (err) {
-      console.error('Erreur lors de la suppression des anciens types de plats :', err);
-    } else {
-      console.log(`Types de plats datant d'il y a plus d'une semaine ont été supprimés`);
-    }
-  });
-}
-
-// Fonction pour exécuter les tâches planifiées pour chaque utilisateur
-function executeScheduledTasksForUsers() {
-  getAllUsers((err, users) => {
-    if (err) {
-      console.error('Erreur lors de la récupération des utilisateurs :', err);
-      return;
-    }
-
-    users.forEach((user) => {
-      addDailyTypes(user.id);
-      deleteOldTypes(user.id);
-    });
-  });
-}
-
-// Planifie l'exécution de l'ajout et suppression des types de plats chaque jour à 00:00
-cron.schedule('0 0 * * *', () => {
-  executeScheduledTasksForUsers();
-});
-
-
-// Renvoie les données calculées pour le graphique
 app.get("/weekly-consumption", authenticateToken, (req, res) => {
   const userId = req.user.user_id;
   const query = `
-    SELECT SUM(calories) AS total_calories, date, type
-    FROM daily_list
-    WHERE user_id = ?
-      AND date >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
-      AND type IN ('Petit déjeuner', 'Repas de midi', 'Encas', 'Repas du soir')
-    GROUP BY date, type
+      SELECT 
+      SUM(p.calories) AS total_calories, 
+      SUM(p.lipid) AS total_lipids, 
+      SUM(p.carbohydrate) AS total_carbohydrates, 
+      SUM(p.protein) AS total_proteins, 
+      dl.date, 
+      dl.type
+    FROM 
+      daily_list dl
+    JOIN 
+      products p ON dl.product_id = p.id
+    WHERE 
+      dl.user_id = ?
+      AND dl.date >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+      AND dl.type IN ('Petit déjeuner', 'Repas de midi', 'Encas', 'Repas du soir')
+    GROUP BY 
+      dl.date, 
+      dl.type
   `;
   db.query(query, [userId], (err, results) => {
     if (err) {
@@ -396,32 +339,7 @@ app.get("/weekly-consumption", authenticateToken, (req, res) => {
       res.status(500).send("Erreur serveur");
       return;
     }
+    console.log(results)
     res.json(results);
   });
 });
-
-
-
-// Middleware pour vérifier le token JWT et récupérer l'ID de l'utilisateur
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token == null) {
-    return res.sendStatus(401);
-  }
-
-  jwt.verify(token, 'your_secret_key', (err, decodedToken) => {
-    if (err) {
-      return res.sendStatus(403);
-    }
-
-    req.user = {
-      user_id: decodedToken.user_id,
-    };
-    next();
-  });
-}
-
-
-
