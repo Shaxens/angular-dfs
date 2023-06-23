@@ -5,7 +5,7 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const scheduler = require('./scheduler/scheduler.js');
-const authenticateToken = require('./middlewares/authenticateToken.js')
+// const authenticateToken = require('./middlewares/authenticateToken.js')
 const db = require('./db');
 const cron = require('node-cron');
 
@@ -118,7 +118,7 @@ app.put("/product/:id", upload, (req, res) => {
 // Route pour supprimer un produit
 app.delete("/product/:id", authenticateToken, (req, res) => {
   const articleId = req.params.id;
-  console.log(req.user)
+
   if (req.user.admin != 1) {
     return res.sendStatus(403);
   }
@@ -343,3 +343,26 @@ app.get("/weekly-consumption", authenticateToken, (req, res) => {
     res.json(results);
   });
 });
+
+// Todo placer dans un dossier middleware
+// Middleware pour vérifier le token JWT et récupérer l'ID de l'utilisateur
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) {
+    return res.sendStatus(401);
+  }
+
+  jwt.verify(token, 'your_secret_key', (err, decodedToken) => {
+    if (err) {
+      return res.sendStatus(403);
+    }
+
+    req.user = {
+      user_id: decodedToken.user_id,
+      admin: decodedToken.admin
+    };
+    next();
+  });
+}
