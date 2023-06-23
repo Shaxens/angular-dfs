@@ -41,7 +41,7 @@ const routes: Routes = [
     resolve: { weeklyData: WeeklyConsumptionResolver }
   },
   { path: 'signup', component: SignupComponent },
-  { path: '*', redirectTo: 'login', pathMatch: 'full' },
+  { path: '**', redirectTo: 'home', pathMatch: 'full' },
 ];
 
 @NgModule({
